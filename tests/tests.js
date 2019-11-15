@@ -3,9 +3,9 @@
 tests({
 
   '### Display Tasks': function() {},
-  '- It should be able to display tasks': function() {
-    tasks.create("This is a todo");
-    
+  '- It should display task list.': function() {
+    tasks.create("This is a task");
+
   },
   '### Manage Tasks': function() {},
   '- It should be able to clear all completed tasks.': function() {

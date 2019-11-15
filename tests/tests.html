@@ -4,12 +4,33 @@
 		<title>The Todo App | Tests</title>
 		<link rel="stylesheet" href="../css/app.css">
 		<link rel="stylesheet" href="tests.css">
-		<script src="../js/handlebars.runtime.min.js"></script>
+	
 	</head>
 	<body>
-		<section class="todo-wrapper">
-			<h1>Testing</h1>
+		<section class="todo-container">
+			<div class="wrapper">
+				<h1>Task list</h1>
+				<div id="task-list"></div>
+			</div>
 		</section>
+		<section class="info-container">
+			<div class="wrapper">
+				<h2>Info side</h2>
+			</div>
+		</section>
+		<section class="simpletest-container">
+			<div id="simpletest-wrapper"></section>
+		</section>
+
+		<script id='test-template' type='text/x-handlebars-template'>
+			<div class="entry">
+				<h1>{{title}}</h1>
+				<div class="body">
+					{{body}}
+				</div>
+			</div>
+		</script>
+		<script src="../js/handlebars.js"></script>
 		<script src="simpletest.js"></script>
 		<script src="../js/app.js"></script>
 		<script src="tests.js"></script>

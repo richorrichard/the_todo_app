@@ -18,6 +18,9 @@ var constructors = {
 }
 
 var tasks = {
+  init: function() {
+    this.render();
+  },
   allTasks: [],
   uuid: function() {
     var uuid = window.crypto.getRandomValues(new Uint32Array(1))[0];
@@ -100,5 +103,14 @@ var tasks = {
   deleteAllTasks: function() { // This is just to help during testing
     this.allTasks = [];
     this.setStorage('the_todo_app', this.allTasks);
+  },
+  render: function() {
+    var taskList = document.getElementById('task-list');
+    var templateSource = document.getElementById('test-template').innerHTML; // get empty template
+    var template = Handlebars.compile(templateSource); // gives you a hook to plug data into 
+    
+    var context = {title: 'Title Time bitches!', body: 'This is the body bitches'}; // identify filling context e.g. data
+    var html = template(context); // render the template WITH the data
+    taskList.innerHTML = html;
   },
 }

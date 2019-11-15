@@ -14,12 +14,14 @@
 - ✓ It should be able to remove all parent tasks from a task.
 
 ### Complete Task
-- It should be able to mark a task as complete.
-- It should be able to mark a task as incomplete.
+- ✓ It should be able to mark a task as complete.
+- ✓ It should be able to mark a task as incomplete.
 
 ### Delete Task(s)
-- It should be able to delete individual tasks.
-- It should be able to delete a task and all child tasks.
+- ✓ It should be able to delete individual tasks.
+
+### Display Tasks
+- It should display task list.
 
 ### Manage Tasks
 - It should be able to clear all completed tasks.

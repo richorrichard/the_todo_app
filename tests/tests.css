@@ -4,12 +4,33 @@ body {
   font-size: 16px;
 }
 
-section.todo-wrapper {
+.wrapper {
   padding: 1em;
+  position: relative;
+}
+section.todo-container {
   background-color: white;
-  min-height: 368px;
+  width: 50%;
+  /* min-height: 368px; */
+  float: left;
+  height: 100vh;
 }
 
-div.simpletest-wrapper {
-  padding: 1em;
+section.info-container {
+  background-color: #ff9e4ca1;
+  width: 50%;
+  float: right;
+  height: 100vh;
 }
+
+section.simpletest-container {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  height: auto;
+}
+
+  #simpletest-wrapper {
+    padding: 1em;
+    position: relative;
+  }

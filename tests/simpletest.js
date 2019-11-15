@@ -40,14 +40,10 @@
 
 var TinyTestHelper = {
     renderStats: function(tests, failures) {
-      var numberOfTests = Object.keys(tests).length;
-      var successes = numberOfTests - failures;
-      var summaryElement = document.createElement('div');
-      summaryElement.className = "simpletest-wrapper";
-      summaryElement.innerHTML =  '<h2><u>Ran ' + numberOfTests + ' Tests</u><h2>'
-                                  + '<h2>' + successes + ' Successes.</h2>'
-                                  + '<h2>' + failures + ' Failures.</h2>'
-      document.body.appendChild(summaryElement);
+        var numberOfTests = Object.keys(tests).length;
+        var successes = numberOfTests - failures;
+        var wrapper = document.getElementById('simpletest-wrapper');
+        wrapper.innerHTML =  '<h2><u>Ran ' + numberOfTests + ' Tests:</u> ' + successes + ' Successes. ' + failures + ' Failures.<h2>'
     }
   }
   
@@ -68,8 +64,10 @@ var TinyTestHelper = {
         }
         setTimeout(function() { // Give document a chance to complete
             if (window.document && document.body) {
-              document.body.style.backgroundColor = (failures == 0 ? '#99ff99' : '#ff9999');
-              TinyTestHelper.renderStats(tests, failures);            
+                var wrapper = document.getElementById('simpletest-wrapper');
+                var bgcolor = failures == 0 ? '#99ff99' : '#ff9999';
+                wrapper.setAttribute('style', 'background-color: ' + bgcolor + ';');
+                TinyTestHelper.renderStats(tests, failures);            
             }
         }, 0);
     },
