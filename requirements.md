@@ -12,6 +12,11 @@
 - ✓ It should be able to assign a parent task to any task.
 - ✓ It should be able to change which tasks are parent tasks.
 - ✓ It should be able to remove all parent tasks from a task.
+- ✓ If `allTasks[0]`, it shouldn't be able to nest at all.
+- ✓ If `parentUUID`, it shouldn't be able to nest any farther.
+- ✓ It should make task `i-1` the parent task.
+- ✓ If no `parentUUID`, it shouldn't nest up at all.
+- ✓ If parent, `parentUUID` should be set to parent's `parentUUID`.
 
 ### Complete Task
 - ✓ It should be able to mark a task as complete.
@@ -20,8 +25,34 @@
 ### Delete Task(s)
 - ✓ It should be able to delete individual tasks.
 
-### Display Tasks
-- It should display task list.
-
 ### Manage Tasks
-- It should be able to clear all completed tasks.
+- ✓ It should be able to clear all completed tasks.
+
+### Render Tasks
+- ✓ It should display task list.
+- ✓ It should display child tasks as nested tasks visually.
+
+### Initiate App
+- If `allTasks.length > 0`, it should render the page.
+- If `allTasks.length === 0`, it should try and load from localStorage.
+- If no allTasks, and no localStorage, it should create a new starter task.
+- It should focus the cursor on the first task item.
+
+
+### Interface Requirements
+
+- It should allow tasks to be completed.
+- It should show that tasks are completed when checked off. 
+- It should allow tasks to be deleted.
+- It should allow tasks to be nested under parent task.
+- It should allow users to clear completed tasks
+
+### Listeners/Events
+- If click on radio, toggle complete task.
+- If single click on task, enter edit.
+- If click on new task button add blank task and focus.
+- If tab, trigger `nestDownOne`. 
+- If shift+tab, trigger `nestUpOne`.
+- If arrow keys, move up and down between tasks.
+- If cmd+delete, delete task.
+- If cmd+enter, toggle complete task.

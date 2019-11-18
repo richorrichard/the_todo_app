@@ -3,32 +3,35 @@
 	<head>
 		<title>The Todo App | Tests</title>
 		<link rel="stylesheet" href="../css/app.css">
+		<link rel="stylesheet" href="../css/normalize.css">
 		<link rel="stylesheet" href="tests.css">
 	
 	</head>
 	<body>
 		<section class="todo-container">
-			<div class="wrapper">
-				<h1>Task list</h1>
-				<div id="task-list"></div>
-			</div>
-		</section>
-		<section class="info-container">
-			<div class="wrapper">
-				<h2>Info side</h2>
-			</div>
-		</section>
-		<section class="simpletest-container">
-			<div id="simpletest-wrapper"></section>
-		</section>
-
-		<script id='test-template' type='text/x-handlebars-template'>
-			<div class="entry">
-				<h1>{{title}}</h1>
-				<div class="body">
-					{{body}}
+			<div>
+				<div class="wrapper">
+					<h1 class="taskList-title contentEditable" contenteditable="true">Placeholder Title</h1>
+					<div class="taskList" id="taskList">
+						<!-- Mustache attached here. -->
+					</div>
+					<span class='addTask'>+</span>
 				</div>
 			</div>
+		</section>
+				
+		<!-- <section class="simpletest-container">
+			<div id="simpletest-wrapper"></section>
+		</section> -->
+
+		<script id="taskTemplate" type='text/x-handlebars-template'>
+			{{#each this}}
+			<div class="task-outer u_{{uuid}}{{#if parentUUID}} child p_{{parentUUID}}{{/if}}">
+				<span class="checkbox"></span>
+				<div class="task" contenteditable="true">{{task}}</div>
+				{{> renderTask children}}
+			</div>
+			{{/each}}
 		</script>
 		<script src="../js/handlebars.js"></script>
 		<script src="simpletest.js"></script>

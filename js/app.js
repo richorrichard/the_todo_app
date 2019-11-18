@@ -3,11 +3,6 @@
 // TODO Alt version: Could move all of the functions on the task to inside a prototype, 
 // and then simply call self.xx_method. Try that after getting this wrapped. 
 
-// Task Constructor
-
-// Need to add a case for loading the page the first time and checking to see if there IS anything in localstorage. I'll lose constructor
-// inheritence, but that's fine.
-
 var constructors = {
   Task: function Task(task) {
     this.task = task;
@@ -18,10 +13,14 @@ var constructors = {
 }
 
 var tasks = {
+  allTasks: [],
   init: function() {
+    // Check if localStorage contains matching tasks
+    if (this.allTasks.length === 0) {
+      this.allTasks = this.getStorage();
+    }
     this.render();
   },
-  allTasks: [],
   uuid: function() {
     var uuid = window.crypto.getRandomValues(new Uint32Array(1))[0];
     return uuid;
@@ -45,9 +44,7 @@ var tasks = {
     }
     
     var matchingIndex = this.allTasks.findIndex(function(value, index) {
-      if (value.uuid === uuid) {
-        return index;
-      }
+      return value.uuid === uuid;
     });
 
     return matchingIndex;
@@ -69,6 +66,7 @@ var tasks = {
     var newTask = new constructors.Task(task);
     this.allTasks.push(newTask);
     this.setStorage();
+    this.render();
     return newTask;
   },
   update: function(uuid, updateObject) {
@@ -90,6 +88,43 @@ var tasks = {
       }
     }
     this.setStorage();
+    this.render();
+  },
+  nestDownOne: function(uuid) {
+    // If first item, do nothing.
+    var task = this.getTaskByUUID(uuid);
+    var taskPosition = this.getIndexByUUID(uuid);
+    var taskPrevious = this.allTasks[taskPosition - 1];
+    var taskParent = this.getTaskByUUID(task.parentUUID);
+
+    if (taskPosition === 0) {
+      return;
+    }
+    // If is already child, do nothing.
+    if (taskParent) {
+      if (taskPrevious.uuid === taskParent.uuid) {
+        return;
+      }
+    }
+    
+    // Else, make task[i-1] parent task
+    this.update(uuid, {
+      parentUUID: taskPrevious.uuid
+    });
+
+  },
+  nestUpOne: function(uuid) {
+    var task = this.getTaskByUUID(uuid);
+    var taskParent = this.getTaskByUUID(task.parentUUID);
+    
+    // If no parent, do nothing
+    if (!taskParent) {
+      return;
+    }
+    // Otherwise, set it to parent's parent
+    this.update(uuid, {
+      parentUUID: taskParent.parentUUID
+    });
   },
   toggleComplete: function(uuid) {
     var targetTask = this.getTaskByUUID(uuid);
@@ -103,14 +138,47 @@ var tasks = {
   deleteAllTasks: function() { // This is just to help during testing
     this.allTasks = [];
     this.setStorage('the_todo_app', this.allTasks);
+    this.render();
+  },
+  clearCompleted() {
+    var filteredTasks = this.allTasks.filter(function(value) {
+      return value.completed === false;
+    });
+    this.allTasks = filteredTasks;
+    this.setStorage();
+    this.render();
   },
   render: function() {
-    var taskList = document.getElementById('task-list');
-    var templateSource = document.getElementById('test-template').innerHTML; // get empty template
-    var template = Handlebars.compile(templateSource); // gives you a hook to plug data into 
-    
-    var context = {title: 'Title Time bitches!', body: 'This is the body bitches'}; // identify filling context e.g. data
-    var html = template(context); // render the template WITH the data
+    var taskList = document.getElementById('taskList');
+    var taskTemplateSource = document.getElementById('taskTemplate').innerHTML; // get empty template
+    var taskTemplate = Handlebars.compile(taskTemplateSource); // gives you a hook to plug data into 
+    Handlebars.registerPartial('renderTask', taskTemplate);
+
+    // Need to load with the array here
+    var renderArray = this.renderWalker(this.allTasks); // identify filling context e.g. data
+    var html = taskTemplate(renderArray); // render the template WITH the data
     taskList.innerHTML = html;
   },
+  renderWalker: function(inputArray) {    
+    // walker function courtesy of StackOverflow
+    function buildTree(allTasks, parentUUID) {
+      var branch = [];
+
+      for (var task of allTasks) {
+        if (task.parentUUID === parentUUID) {
+          var children = buildTree(allTasks, task.uuid);
+          if (children) {
+            task.children = children;
+          }
+          branch.push(task);
+        }
+      }
+
+      return branch;
+    }
+
+    var tree = buildTree.call(this, inputArray);
+    return tree;
+  },
 }
+
