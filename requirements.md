@@ -33,14 +33,17 @@
 - ✓ It should display child tasks as nested tasks visually.
 
 ### Initiate App
-- If `allTasks.length > 0`, it should render the page.
-- If `allTasks.length === 0`, it should try and load from localStorage.
-- If no allTasks, and no localStorage, it should create a new starter task.
-- It should focus the cursor on the first task item.
+- ✓ If `allTasks.length > 0`, it should render the page.
+- ✓ If `allTasks.length === 0`, it should try and load from localStorage.
+- ✓ If no allTasks, and no localStorage, it should create a new starter task.
 
+### Needed Helper Requirements
+- ✓ It should be able to get a task UUID from the DOM element.
+- ✓ It should be able to retrieve a task by its UUID.
+- ✓ It should be able to retrieve a task's index in the array by its UUID.
+<!-- it needs more here. Keep the Helpers tested and accountable -->
 
 ### Interface Requirements
-
 - It should allow tasks to be completed.
 - It should show that tasks are completed when checked off. 
 - It should allow tasks to be deleted.

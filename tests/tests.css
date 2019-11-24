@@ -48,7 +48,7 @@ section.todo-container .wrapper {
   }
 
   .todo-container h1 {
-    margin: 0 0 1.5em;
+    margin: 0 0 1.1em;
     padding: .25em 0.25em .25em 1.5em;
     min-width: 100px;
     z-index: 1;
@@ -97,7 +97,7 @@ section.todo-container .wrapper {
         content: '';
         width: 7px;
         height: 7px; 
-        background: red;
+        background: #43e9fb;
         position: absolute;
         top: 8px;
         left: 1.75em;
@@ -106,13 +106,18 @@ section.todo-container .wrapper {
       }
 
       .checkbox:hover {
-        border: 2px solid red;
+        border: 2px solid #43e9fb;
         cursor: pointer;
       }
 
       .task {
         margin-left: 3em;
         padding: .35em 0;
+      }
+
+      .task-outer.completed .task {
+        text-decoration: line-through;
+        color: #43e9fb;
       }
   
   .addTask {

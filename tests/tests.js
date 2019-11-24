@@ -1,5 +1,20 @@
 "use strict";
 
+function simulateMouseEvent(elem, eventType) {
+  var evt = new MouseEvent(eventType, {
+    bubbles: true,
+    cancelable: true,
+    view: window
+  });
+  var canceled = !elem.dispatchEvent(evt);
+  if(canceled) {
+    // A handler called preventDefault
+    // console.log("canceled");
+  } else {
+    // None of the handlers called preventDefault
+    // console.log('not canceled');
+  }
+}
 
 tests({
 
@@ -186,23 +201,117 @@ tests({
     var storedTaskList = JSON.parse(localStorage.getItem('the_todo_app'));
     eq(storedTaskList.length, 1);
     tasks.deleteAllTasks();
-  },*/
+  },
   '### Initiate App': function() {},
   '- If `allTasks.length > 0`, it should render the page.': function () {
-    tasks.create('This is task 1');
-    tasks.create('This is task 2');
-    tasks.create('This is task 3');
-    tasks.create('This is task 4');
-    tasks.create('This is task 5');
+    tasks.deleteAllTasks();
+    tasks.allTasks = [
+      {task: 'This is manually added task 1', completed: false, uuid: 123},
+      {task: 'This is manually added task 2', completed: false, uuid: 124},
+      {task: 'This is manually added task 3', completed: false, uuid: 125},
+    ];
+    tasks.init();
+    var task1Element = document.querySelector('[data-u="123"]');
+    eq(Boolean(task1Element), true);
   },
   '- If `allTasks.length === 0`, it should try and load from localStorage.': function () {
-    fail();
+    tasks.deleteAllTasks();
+    tasks.allTasks = [
+      {task: 'This is manually added task 1', completed: false, uuid: 123},
+      {task: 'This is manually added task 2', completed: false, uuid: 124},
+      {task: 'This is manually added task 3', completed: false, uuid: 125},
+    ];
+    tasks.setStorage();
+    tasks.allTasks = [];
+    tasks.init();
+    var task1Element = document.querySelector('[data-u="123"]');
+    eq(Boolean(task1Element), true);
   },
   '- If no allTasks, and no localStorage, it should create a new starter task.': function () {
+    tasks.deleteAllTasks();
+    // debugger;
+    tasks.init();
+    var task1Element = document.querySelector('.taskList > div');
+    eq(Boolean(task1Element), true);
+  },
+  '### Needed Helper Requirements': function() {},
+  '- It should be able to get a task UUID from the DOM element.': function() {
+    tasks.deleteAllTasks();
+    var task = tasks.create('This is a task');
+    var task1Element = document.querySelector('[data-u="' + task.uuid + '"]');
+    eq(Boolean(task1Element), true);
+    
+  },
+  '- It should be able to retrieve a task by its UUID.': function() {
+    tasks.deleteAllTasks();
+    var task = tasks.create('This is a task');
+    var testUUID = tasks.allTasks[0].uuid;
+    eq(tasks.getTaskByUUID(testUUID), task);
+  },
+  '- It should be able to retrieve a task\'s index in the array by its UUID.': function() {
+    tasks.deleteAllTasks();
+    var task = tasks.create('This is a task');
+    eq(tasks.getIndexByUUID(task.uuid), 0);
+  },*/
+  '### Interface Requirements': function() {},
+  '- It should show that tasks are completed when checked off. ': function() {
+    // Create task and simulate click
+    tasks.deleteAllTasks();
+    var task1 = tasks.create('This is a new task');
+    var elem = document.querySelector('.checkbox');
+    simulateMouseEvent(elem, 'click');
+    // Check rendered style
+    var computedStyle = window.getComputedStyle(document.querySelector('.task'));
+    var textStyle = computedStyle.getPropertyValue('text-decoration-line');
+    eq(textStyle, 'line-through');
+  },
+  '- It should show that tasks are nested under parent task.': function() {
     fail();
   },
-  '- It should focus the cursor on the first task item.': function () {
+  '- It should allow users to clear completed tasks': function() {
     fail();
   },
-  
+  '- It should allow tasks to be deleted.': function() {
+    fail();
+  },
+  '### Listeners/Events': function() {},
+  '- If click on radio, toggle complete task.': function() {
+    tasks.deleteAllTasks();
+    var task1 = tasks.create('This is a new task');
+    var elem = document.querySelector('.checkbox');
+    simulateMouseEvent(elem, 'click');
+    eq(task1.completed, true);
+  },
+  '- If typing inside task, update task.': function() {
+    tasks.deleteAllTasks();
+    var task1 = tasks.create('This is a new task');
+    var elem = document.querySelector('.task');
+    var evt = new KeyboardEvent(eventType, {
+      code: 65, // STOPPED HEREEEEEEEEE
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+    elem.dispatchEvent(evt);
+  },
+  '- If click on new task button add blank task and focus.': function() {
+    fail();
+  },
+  '- If tab inside task, trigger `nestDownOne`. ': function() {
+    fail();
+  },
+  '- If shift+tab inside task, trigger `nestUpOne`.': function() {
+    fail();
+  },
+  '- If arrow keys, move up and down between tasks.': function() {
+    fail();
+  },
+  '- If cmd+delete, delete task.': function() {
+    fail();
+  },
+  '- If cmd+enter, toggle complete task.': function() {
+    fail();
+  },
+
 });
+

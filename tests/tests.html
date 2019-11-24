@@ -26,9 +26,9 @@
 
 		<script id="taskTemplate" type='text/x-handlebars-template'>
 			{{#each this}}
-			<div class="task-outer u_{{uuid}}{{#if parentUUID}} child p_{{parentUUID}}{{/if}}">
+			<div class="task-outer{{#if parentUUID}} child{{parentUUID}}{{/if}}{{#if completed}} completed{{/if}}" data-u="{{uuid}}" {{#if parentUUID}}data-p="{{parentUUID}}"{{/if}}>
 				<span class="checkbox"></span>
-				<div class="task" contenteditable="true">{{task}}</div>
+				<div class="task" contenteditable="true" tabindex="1">{{task}}</div>
 				{{> renderTask children}}
 			</div>
 			{{/each}}

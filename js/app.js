@@ -17,9 +17,15 @@ var tasks = {
   init: function() {
     // Check if localStorage contains matching tasks
     if (this.allTasks.length === 0) {
-      this.allTasks = this.getStorage();
-    }
+      if (this.getStorage().length > 0){
+        this.allTasks = this.getStorage();
+      } else {
+        var firstTask = this.create('');
+      }
+    } 
+    
     this.render();
+    this.bindEvents();
   },
   uuid: function() {
     var uuid = window.crypto.getRandomValues(new Uint32Array(1))[0];
@@ -49,6 +55,10 @@ var tasks = {
 
     return matchingIndex;
   },
+  getUUIDFromElement: function(domElement) {
+    var UUIDString = domElement.dataset['u'];
+    return parseInt(UUIDString);
+  },
   // Manage Data
   setStorage: function() {
     localStorage.setItem('the_todo_app', JSON.stringify(this.allTasks));
@@ -61,7 +71,39 @@ var tasks = {
       return [];
     }
   },
-  // CRUD Interactions
+  // Interface 
+  bindEvents: function() {
+    document.querySelector('.taskList').addEventListener('click', function(e) {
+      if (e.target.className === 'checkbox') {
+        this.toggleComplete(this.getUUIDFromElement(e.target.parentElement));
+      }
+      e.stopImmediatePropagation();
+    }.bind(this));
+    document.querySelector('.taskList').addEventListener('keydown', function() {
+      if (e.target.className === 'task') {
+        this.updateKeydown(e.target.parentElement);
+      }
+    }.bind(this));
+    document.querySelector('.taskList').addEventListener('keyup', function() {
+      if (e.target.className === 'task') {
+        this.updateKeyup(e.target.parentElement);
+      }
+    }.bind(this));
+    document.querySelector('.addTask').addEventListener('click', this.create.bind(this));
+
+    /**
+     * This is where I broke off – need to add the tests first and then then link up the 
+     * handlers to the the proper events.
+     * 
+     * Sidenote – need to add the 'completed' class to the tasks too for the style.
+     */
+    
+    // TODO: need to add another for handling the clear list functionality. Should put
+    // that in the bottom right corner.
+  },
+  updateKeyup: function(e) {},
+  updateKeydown: function(e) {},
+  // CRUD
   create: function(task) {
     var newTask = new constructors.Task(task);
     this.allTasks.push(newTask);
@@ -128,7 +170,9 @@ var tasks = {
   },
   toggleComplete: function(uuid) {
     var targetTask = this.getTaskByUUID(uuid);
-    targetTask.completed = !targetTask.completed;    
+    targetTask.completed = !targetTask.completed;   
+    this.setStorage();
+    this.render(); 
   },
   deleteTask: function(uuid) {
     var indexToDelete = this.getIndexByUUID(uuid);
@@ -179,6 +223,8 @@ var tasks = {
 
     var tree = buildTree.call(this, inputArray);
     return tree;
-  },
+  }
 }
+
+tasks.init();
 
