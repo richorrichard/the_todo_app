@@ -108,20 +108,26 @@ var tasks = {
       if (e.target.className === 'task') {
         this.updateKeydown(e);
       }
+      e.stopImmediatePropagation()
     }.bind(this));
     document.querySelector('.taskList').addEventListener('keyup', function(e) {
       if (e.target.className === 'task') {
         this.updateKeyup(e);
       }
+      e.stopImmediatePropagation()
     }.bind(this));
-    document.querySelector('.addTask').addEventListener('click', this.create.bind(this, ''));
-    document.querySelector('.clearAll').addEventListener('click', this.clearCompleted.bind(this));
+    document.querySelector('.addTask').addEventListener('click', function(e) {
+      this.create('');
+      e.stopImmediatePropagation();
+    }.bind(this));
+    document.querySelector('.clearAll').addEventListener('click', function(e) {
+      this.clearCompleted();
+      e.stopImmediatePropagation();
+    }.bind(this));
   },
   updateKeyup: function(e) {
     var elem = e.target;
     var uuid = parseInt(elem.parentElement.dataset['u']);
-    console.log(e.which);
-    
     // if esc, return and reset the string to stored value
     if (e.which === ESCKEY) {
       this.cancelUpdate(elem, uuid);
@@ -143,6 +149,7 @@ var tasks = {
     }
 
     if (e.metaKey && e.which === DELETEKEY) {
+      debugger;
       e.preventDefault();
       this.deleteTask(uuid);
     }
@@ -162,8 +169,6 @@ var tasks = {
       e.preventDefault();
       this.nestDownOne(uuid);
     }
-
-
   },
   cancelUpdate: function(el, uuid) {
     var task = this.getTaskByUUID(uuid);

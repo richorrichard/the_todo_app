@@ -2,6 +2,7 @@
 
 tests({
 
+  /*
   '### Render Tasks': function() {},
   '- It should display task list.': function() {
     tasks.deleteAllTasks();
@@ -109,13 +110,14 @@ tests({
   },
   '- It should make task `i-1` the parent task.': function() {
     var task1 = tasks.create('This is task 1');
-      var task2 = tasks.create('This is task 2');
+    var task2 = tasks.create('This is task 2');
     tasks.nestDownOne(task2.uuid);
     
     eq(task2.parentUUID, task1.uuid);
     tasks.deleteAllTasks();
   },
   '- If `allTasks[0]`, it shouldn\'t be able to nest at all.': function() {
+    tasks.deleteAllTasks();
     var task1 = tasks.create('This is allTasks[0]');
     var task2 = tasks.create('This is allTasks[1]');
     tasks.nestDownOne(task1.uuid);
@@ -124,17 +126,17 @@ tests({
     tasks.deleteAllTasks();
   },
   '- If `parentUUID`, it shouldn\'t be able to nest any farther.': function() {
-
+    
     // data to use for all tests
     var task1 = tasks.create('This is task 1');
     var task2 = tasks.create('This is task 2');
-      var task3 = tasks.create('This is task 3');
+    var task3 = tasks.create('This is task 3');
     var task4 = tasks.create('This is task 4');
-      var task5 = tasks.create('This is task 5');
+    var task5 = tasks.create('This is task 5');
     
     tasks.update(task3.uuid, {parentUUID: task2.uuid,});
     tasks.update(task5.uuid, {parentUUID: task4.uuid,});
-
+    
     // try to take down again
     tasks.nestDownOne(task3.uuid);
     tasks.nestDownOne(task4.uuid);
@@ -152,9 +154,9 @@ tests({
   },
   '- If parent, `parentUUID` should be set to parent\'s `parentUUID`.': function() {
     var task1 = tasks.create('This is task 1');
-      var task2 = tasks.create('This is task 2');
-      var task3 = tasks.create('This is task 3');
-        var task4 = tasks.create('This is task 4');
+    var task2 = tasks.create('This is task 2');
+    var task3 = tasks.create('This is task 3');
+    var task4 = tasks.create('This is task 4');
     tasks.nestDownOne(task2.uuid);
     tasks.nestDownOne(task4.uuid);
     tasks.nestDownOne(task3.uuid);
@@ -171,6 +173,7 @@ tests({
     tasks.deleteAllTasks(); 
   },
   '- It should return the new task to allow usage of created task.': function() {
+    tasks.deleteAllTasks();
     var newTask = tasks.create('This is a child task');
     eq(tasks.allTasks[0].uuid, newTask.uuid);
     tasks.deleteAllTasks();
@@ -183,6 +186,7 @@ tests({
     tasks.deleteAllTasks();
   },
   '- It should be able to store tasks on localStorage.': function() {
+    tasks.deleteAllTasks();
     tasks.create('This is a stored item');
     var storedTaskList = JSON.parse(localStorage.getItem('the_todo_app'));
     eq(storedTaskList.length, 1);
@@ -277,5 +281,5 @@ tests({
   '- If cmd+enter, toggle complete task.': function() {
     // Passes
   },
-
+  */
 });
