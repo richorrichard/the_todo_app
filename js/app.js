@@ -2,6 +2,10 @@
 
 // TODO Alt version: Could move all of the functions on the task to inside a prototype, 
 // and then simply call self.xx_method. Try that after getting this wrapped. 
+var ENTERKEY = 13;
+var ESCKEY = 27;
+var TABKEY = 9;
+var DELETEKEY = 8;
 
 var constructors = {
   Task: function Task(task) {
@@ -79,17 +83,18 @@ var tasks = {
       }
       e.stopImmediatePropagation();
     }.bind(this));
-    document.querySelector('.taskList').addEventListener('keydown', function() {
+    document.querySelector('.taskList').addEventListener('keydown', function(e) {
       if (e.target.className === 'task') {
-        this.updateKeydown(e.target.parentElement);
+        this.updateKeydown(e);
       }
     }.bind(this));
-    document.querySelector('.taskList').addEventListener('keyup', function() {
+    document.querySelector('.taskList').addEventListener('keyup', function(e) {
       if (e.target.className === 'task') {
-        this.updateKeyup(e.target.parentElement);
+        this.updateKeyup(e);
       }
     }.bind(this));
-    document.querySelector('.addTask').addEventListener('click', this.create.bind(this));
+    document.querySelector('.addTask').addEventListener('click', this.create.bind(this, ''));
+    
 
     /**
      * This is where I broke off – need to add the tests first and then then link up the 
@@ -101,8 +106,62 @@ var tasks = {
     // TODO: need to add another for handling the clear list functionality. Should put
     // that in the bottom right corner.
   },
-  updateKeyup: function(e) {},
-  updateKeydown: function(e) {},
+  updateKeyup: function(e) {
+    var elem = e.target;
+    var uuid = parseInt(elem.parentElement.dataset['u']);
+    console.log(e.which);
+    
+    // if esc, return and reset the string to stored value
+    if (e.which === ESCKEY) {
+      this.cancelUpdate(elem, uuid);
+    }
+
+    // if enter, return value to storage
+    if (e.which === ENTERKEY && !e.metaKey) {
+      this.update(uuid, {
+        task: elem.innerText
+      });
+      this.create('');
+    }
+    
+    // else, do nothing
+  },
+  updateKeydown: function(e) {
+    var elem = e.target;
+    var uuid = parseInt(elem.parentElement.dataset['u']);
+    // debugger;
+    if (e.which === ENTERKEY) {
+      e.preventDefault();
+    }
+
+    if (e.metaKey && e.which === DELETEKEY) {
+      e.preventDefault();
+      this.deleteTask(uuid);
+    }
+
+    if (e.metaKey && e.which === ENTERKEY) {
+      e.preventDefault();
+      this.toggleComplete(uuid);
+    }
+
+    if (e.shiftKey && e.which === TABKEY) {
+      // debugger;
+      e.preventDefault();
+      this.nestUpOne(uuid);
+    }
+
+    if (!e.shiftKey && e.which === TABKEY) {
+      e.preventDefault();
+      this.nestDownOne(uuid);
+    }
+
+
+  },
+  cancelUpdate: function(el, uuid) {
+    var task = this.getTaskByUUID(uuid);
+    el.innerText = task.task;
+    el.blur();
+  },
   // CRUD
   create: function(task) {
     var newTask = new constructors.Task(task);
@@ -154,6 +213,8 @@ var tasks = {
       parentUUID: taskPrevious.uuid
     });
 
+    this.setStorage();
+    this.render();
   },
   nestUpOne: function(uuid) {
     var task = this.getTaskByUUID(uuid);
@@ -167,8 +228,12 @@ var tasks = {
     this.update(uuid, {
       parentUUID: taskParent.parentUUID
     });
+
+    this.setStorage();
+    this.render();
   },
   toggleComplete: function(uuid) {
+    
     var targetTask = this.getTaskByUUID(uuid);
     targetTask.completed = !targetTask.completed;   
     this.setStorage();
@@ -178,6 +243,7 @@ var tasks = {
     var indexToDelete = this.getIndexByUUID(uuid);
     this.allTasks.splice(indexToDelete,1);
     this.setStorage();
+    this.render();
   },
   deleteAllTasks: function() { // This is just to help during testing
     this.allTasks = [];

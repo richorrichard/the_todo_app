@@ -115,7 +115,7 @@ section.todo-container .wrapper {
         padding: .35em 0;
       }
 
-      .task-outer.completed .task {
+      .task-outer.completed > .task {
         text-decoration: line-through;
         color: #43e9fb;
       }
