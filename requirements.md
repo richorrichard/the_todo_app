@@ -44,18 +44,17 @@
 <!-- it needs more here. Keep the Helpers tested and accountable -->
 
 ### Interface Requirements
-- It should allow tasks to be completed.
-- It should show that tasks are completed when checked off. 
-- It should allow tasks to be deleted.
-- It should allow tasks to be nested under parent task.
-- It should allow users to clear completed tasks
+- ✓ It should allow tasks to be completed.
+- ✓ It should show that tasks are completed when checked off. 
+- ✓ It should allow tasks to be deleted.
+- ✓ It should allow tasks to be nested under parent task.
+- ✓ It should allow users to clear completed tasks
 
 ### Listeners/Events
-- If click on radio, toggle complete task.
-- If single click on task, enter edit.
-- If click on new task button add blank task and focus.
-- If tab, trigger `nestDownOne`. 
-- If shift+tab, trigger `nestUpOne`.
-- If arrow keys, move up and down between tasks.
-- If cmd+delete, delete task.
-- If cmd+enter, toggle complete task.
+- ✓ If click on radio, toggle complete task.
+- ✓ If single click on task, enter edit.
+- ✓ If click on new task button add blank task and focus.
+- ✓ If tab, trigger `nestDownOne`. 
+- ✓ If shift+tab, trigger `nestUpOne`.
+- ✓ If cmd+delete, delete task.
+- ✓ If cmd+enter, toggle complete task.

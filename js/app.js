@@ -31,6 +31,7 @@ var tasks = {
     this.render();
     this.bindEvents();
   },
+  // Helper Methods
   uuid: function() {
     var uuid = window.crypto.getRandomValues(new Uint32Array(1))[0];
     return uuid;
@@ -63,6 +64,26 @@ var tasks = {
     var UUIDString = domElement.dataset['u'];
     return parseInt(UUIDString);
   },
+  getTaskElementByUUID: function(uuid) {
+    var resultNodes = document.querySelectorAll('[data-u="' + uuid + '"] > .task');
+    return resultNodes[0];
+  },
+  setFocusAtEnd: function(el) {
+    // debugger;
+    var range = document.createRange();
+    var sel = window.getSelection();
+    var textNode = el.childNodes[0];
+    if (textNode) {
+      var length = el.innerText.length;
+      range.setStart(textNode, length);
+    } else {
+      range.setStart(el, 0);
+    }
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    el.focus();
+  },
   // Manage Data
   setStorage: function() {
     localStorage.setItem('the_todo_app', JSON.stringify(this.allTasks));
@@ -94,17 +115,7 @@ var tasks = {
       }
     }.bind(this));
     document.querySelector('.addTask').addEventListener('click', this.create.bind(this, ''));
-    
-
-    /**
-     * This is where I broke off – need to add the tests first and then then link up the 
-     * handlers to the the proper events.
-     * 
-     * Sidenote – need to add the 'completed' class to the tasks too for the style.
-     */
-    
-    // TODO: need to add another for handling the clear list functionality. Should put
-    // that in the bottom right corner.
+    document.querySelector('.clearAll').addEventListener('click', this.clearCompleted.bind(this));
   },
   updateKeyup: function(e) {
     var elem = e.target;
@@ -114,17 +125,14 @@ var tasks = {
     // if esc, return and reset the string to stored value
     if (e.which === ESCKEY) {
       this.cancelUpdate(elem, uuid);
-    }
-
-    // if enter, return value to storage
-    if (e.which === ENTERKEY && !e.metaKey) {
+    } else if (e.which === ENTERKEY && !e.metaKey) {
+      this.create('');
+    } else {
       this.update(uuid, {
         task: elem.innerText
       });
-      this.create('');
+      this.setFocusAtEnd(this.getTaskElementByUUID(uuid));
     }
-    
-    // else, do nothing
   },
   updateKeydown: function(e) {
     var elem = e.target;
@@ -164,10 +172,12 @@ var tasks = {
   },
   // CRUD
   create: function(task) {
+    // debugger;
     var newTask = new constructors.Task(task);
     this.allTasks.push(newTask);
     this.setStorage();
     this.render();
+    this.setFocusAtEnd(this.getTaskElementByUUID(newTask.uuid));
     return newTask;
   },
   update: function(uuid, updateObject) {
@@ -215,6 +225,7 @@ var tasks = {
 
     this.setStorage();
     this.render();
+    this.setFocusAtEnd(this.getTaskElementByUUID(uuid));
   },
   nestUpOne: function(uuid) {
     var task = this.getTaskByUUID(uuid);
@@ -231,6 +242,7 @@ var tasks = {
 
     this.setStorage();
     this.render();
+    this.setFocusAtEnd(this.getTaskElementByUUID(uuid));
   },
   toggleComplete: function(uuid) {
     
@@ -238,19 +250,25 @@ var tasks = {
     targetTask.completed = !targetTask.completed;   
     this.setStorage();
     this.render(); 
+    this.setFocusAtEnd(this.getTaskElementByUUID(uuid));
   },
   deleteTask: function(uuid) {
     var indexToDelete = this.getIndexByUUID(uuid);
+    var previousItem = this.allTasks[indexToDelete - 1];
     this.allTasks.splice(indexToDelete,1);
     this.setStorage();
     this.render();
+    if (previousItem) {
+      // debugger;
+      this.setFocusAtEnd(this.getTaskElementByUUID(previousItem.uuid));
+    }
   },
   deleteAllTasks: function() { // This is just to help during testing
     this.allTasks = [];
     this.setStorage('the_todo_app', this.allTasks);
     this.render();
   },
-  clearCompleted() {
+  clearCompleted: function() {
     var filteredTasks = this.allTasks.filter(function(value) {
       return value.completed === false;
     });
