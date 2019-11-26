@@ -287,6 +287,12 @@ tests({
   '- If cmd+enter, toggle complete task.': function() {
     // Passes
   },
+  '- If meta + up arrow, move to previous task.': function() {
+    // Passes
+  },
+  '- If meta + down arrow, move to next task.': function() {
+    // Passes
+  },
   
 });
 

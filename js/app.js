@@ -6,6 +6,8 @@ var ENTERKEY = 13;
 var ESCKEY = 27;
 var TABKEY = 9;
 var DELETEKEY = 8;
+var UPARROWKEY = 38;
+var DOWNARROWKEY = 40;
 
 var constructors = {
   Task: function Task(task) {
@@ -143,6 +145,11 @@ var tasks = {
   updateKeydown: function(e) {
     var elem = e.target;
     var uuid = parseInt(elem.parentElement.dataset['u']);
+    var prevTaskIndex;
+    var prevTaskElement;
+    var nextTaskIndex;
+    var nextTaskElement;
+    
     if (e.which === ENTERKEY) {
       e.preventDefault();
     }
@@ -165,6 +172,24 @@ var tasks = {
     if (!e.shiftKey && e.which === TABKEY) {
       e.preventDefault();
       this.nestDownOne(uuid);
+    }
+    
+    if (e.metaKey && e.which === UPARROWKEY) {
+      e.preventDefault();
+      prevTaskIndex = this.getIndexByUUID(uuid) - 1;
+      if (this.allTasks[prevTaskIndex]) {
+        prevTaskElement = this.getTaskElementByUUID(this.allTasks[prevTaskIndex].uuid);
+        this.setFocusAtEnd(prevTaskElement);
+      }
+    }
+    
+    if (e.metaKey && e.which === DOWNARROWKEY) {
+      e.preventDefault();
+      nextTaskIndex = this.getIndexByUUID(uuid) + 1;
+      if (this.allTasks[nextTaskIndex]) {
+        nextTaskElement = this.getTaskElementByUUID(this.allTasks[nextTaskIndex].uuid);
+        this.setFocusAtEnd(nextTaskElement);
+      }
     }
   },
   cancelUpdate: function(el, uuid) {
