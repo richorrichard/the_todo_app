@@ -61,3 +61,5 @@
 - ✓ If shift+tab inside task, trigger `nestUpOne`
 - ✓ If cmd+delete, delete task.
 - ✓ If cmd+enter, toggle complete task.
+- If meta + up arrow, move to previous task. 
+- If meta + down arrow, move to next task. 

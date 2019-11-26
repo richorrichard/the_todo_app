@@ -49,6 +49,22 @@ tests({
     eq(tasks.allTasks.includes(newTask3), true);
     tasks.deleteAllTasks();
   },
+  '- It should only delete the task, not any child tasks': function() {
+    resetTasks(4);
+    var task1 = tasks.allTasks[0];
+    var task2 = tasks.allTasks[1];
+    var task3 = tasks.allTasks[2];
+    var task4 = tasks.allTasks[3];
+    tasks.nestDownOne(task2.uuid);
+    tasks.nestDownOne(task3.uuid);
+    tasks.nestDownOne(task4.uuid);
+    tasks.nestUpOne(task4.uuid);
+    tasks.toggleComplete(task2.uuid);
+    tasks.deleteTask(task2.uuid);
+    eq(tasks.allTasks[1].uuid, task3.uuid);
+    eq(task1.children.length, 0);
+    eq(task3.parentUUID, 0);
+  },
   '### Complete Task': function() {},
   '- It should be able to mark a task as complete.': function() {
     var newTask = tasks.create('This is a task');
@@ -296,7 +312,7 @@ tests({
   '- If task loses focus, update task': function() {
     fail();
   },
-  
+
 });
 
 tasks.deleteAllTasks();

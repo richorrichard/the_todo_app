@@ -330,6 +330,25 @@ var tasks = {
   deleteTask: function(uuid) {
     var indexToDelete = this.getIndexByUUID(uuid);
     var previousItem = this.allTasks[indexToDelete - 1];
+    var currentTask = this.getTaskByUUID(uuid);
+    var parentTask = this.getTaskByUUID(currentTask.parentUUID);
+
+    // remove item from its parent
+    if (currentTask.parentUUID > 0) {
+      var currentTaskChildIndex = parentTask.children.findIndex(function(el) {
+        return el === currentTask; 
+      });
+      parentTask.children.splice(currentTaskChildIndex, 1); // This is the remove from children
+    }
+    // search for any task with this as its parent
+    var parentMatchArray = this.allTasks.filter(function(el) {
+      return el.parentUUID === uuid;
+    });
+    // set those to 0
+    parentMatchArray.forEach(function(el) {
+      el.parentUUID = 0;
+    });
+    // delete this task from master index
     this.allTasks.splice(indexToDelete,1);
     this.setStorage();
     this.render();
