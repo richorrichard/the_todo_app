@@ -293,6 +293,9 @@ tests({
   '- If meta + down arrow, move to next task.': function() {
     // Passes
   },
+  '- If task loses focus, update task': function() {
+    fail();
+  },
   
 });
 
