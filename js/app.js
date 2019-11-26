@@ -12,7 +12,8 @@ var constructors = {
     this.task = task;
     this.uuid = tasks.uuid();
     this.completed = false;
-    this.parentUUID = undefined;
+    this.parentUUID = 0;
+    this.children = [];
   },
 }
 
@@ -69,7 +70,6 @@ var tasks = {
     return resultNodes[0];
   },
   setFocusAtEnd: function(el) {
-    // debugger;
     var range = document.createRange();
     var sel = window.getSelection();
     var textNode = el.childNodes[0];
@@ -143,13 +143,11 @@ var tasks = {
   updateKeydown: function(e) {
     var elem = e.target;
     var uuid = parseInt(elem.parentElement.dataset['u']);
-    // debugger;
     if (e.which === ENTERKEY) {
       e.preventDefault();
     }
 
     if (e.metaKey && e.which === DELETEKEY) {
-      debugger;
       e.preventDefault();
       this.deleteTask(uuid);
     }
@@ -160,7 +158,6 @@ var tasks = {
     }
 
     if (e.shiftKey && e.which === TABKEY) {
-      // debugger;
       e.preventDefault();
       this.nestUpOne(uuid);
     }
@@ -176,8 +173,25 @@ var tasks = {
     el.blur();
   },
   // CRUD
-  create: function(task) {
-    // debugger;
+  create: function(taskText) {
+    var newTask = new constructors.Task(taskText);
+    if (this.allTasks.length > 1) {
+      var previousTaskIndex = this.allTasks.length - 1;
+
+      if (this.allTasks[previousTaskIndex].parentUUID !== 0) {
+        var parentTaskUUID = this.allTasks[previousTaskIndex].parentUUID;
+        var parentTask = this.getTaskByUUID(parentTaskUUID);
+        newTask.parentUUID = parentTaskUUID;
+        parentTask.children.push(newTask);
+      } 
+    } 
+    this.allTasks.push(newTask);
+    this.setStorage();
+    this.render();
+    this.setFocusAtEnd(this.getTaskElementByUUID(newTask.uuid));
+    return newTask;
+  },
+  createOld: function(task) {
     var newTask = new constructors.Task(task);
     this.allTasks.push(newTask);
     this.setStorage();
@@ -192,22 +206,40 @@ var tasks = {
      *    parentUUID: [number]
      */
 
-    var targetTask = this.getTaskByUUID(uuid);
+    var currentTask = this.getTaskByUUID(uuid);
+
     if (arguments.length > 1) {
       // Explictly set each property to prevent overwriting uuid etc.
       if (updateObject.hasOwnProperty('task')) {
-        targetTask['task'] = updateObject['task'];
+        currentTask['task'] = updateObject['task'];
       }
 
       if (updateObject.hasOwnProperty('parentUUID')) {
-        targetTask['parentUUID'] = updateObject['parentUUID'];
+        var currentParentTaskUUID = currentTask.parentUUID;
+        var currentParentTask = this.getTaskByUUID(currentParentTaskUUID);
+        var newParentTaskUUID = updateObject['parentUUID'];
+        var newParentTask;
+          
+        if (currentParentTaskUUID > 0) {
+          var currentTaskChildIndex = currentParentTask.children.findIndex(function(el) {
+            return el === currentTask; 
+          });
+          currentParentTask.children.splice(currentTaskChildIndex, 1); // This is the remove from children
+        }
+
+        if (newParentTaskUUID > 0) {
+          newParentTask = this.getTaskByUUID(newParentTaskUUID);
+          newParentTask['children'].push(currentTask);
+        }
+
+        currentTask['parentUUID'] = newParentTaskUUID;
       }
     }
+
     this.setStorage();
     this.render();
   },
   nestDownOne: function(uuid) {
-    // If first item, do nothing.
     var task = this.getTaskByUUID(uuid);
     var taskPosition = this.getIndexByUUID(uuid);
     var taskPrevious = this.allTasks[taskPosition - 1];
@@ -216,41 +248,54 @@ var tasks = {
     if (taskPosition === 0) {
       return;
     }
+
     // If is already child, do nothing.
-    if (taskParent) {
+    if (task.parentUUID > 0) {
       if (taskPrevious.uuid === taskParent.uuid) {
         return;
       }
     }
     
-    // Else, make task[i-1] parent task
+    // Else nest task down one level
     this.update(uuid, {
       parentUUID: taskPrevious.uuid
     });
-
-    this.setStorage();
-    this.render();
     this.setFocusAtEnd(this.getTaskElementByUUID(uuid));
   },
   nestUpOne: function(uuid) {
-    var task = this.getTaskByUUID(uuid);
-    var taskParent = this.getTaskByUUID(task.parentUUID);
+    var currentTask = this.getTaskByUUID(uuid);
+    var currentTaskIndex = this.getIndexByUUID(uuid);
+    var taskParent = this.getTaskByUUID(currentTask.parentUUID);
+    var newTaskParentUUID;
     
     // If no parent, do nothing
-    if (!taskParent) {
+    if (currentTask.parentUUID === 0) {
       return;
     }
-    // Otherwise, set it to parent's parent
+
+    // Check if previous task's parent is the same as current Task's parent
+    if (tasks.allTasks.length - 1 === currentTaskIndex) {
+      // Specific case for last item in the array
+      newTaskParentUUID = taskParent.parentUUID;
+    } else if (this.allTasks[currentTaskIndex - 1].parentUUID === currentTask.parentUUID) {
+      return;
+    // Check if another child task after current task
+    } else if (this.allTasks[currentTaskIndex + 1].parentUUID === currentTask.parentUUID) {
+      return;
+    } else if (taskParent.parentUUID === 0) { 
+      newTaskParentUUID = 0;
+    } else {
+      newTaskParentUUID = taskParent.parentUUID;
+    }
+    
+    // Update task parent
     this.update(uuid, {
-      parentUUID: taskParent.parentUUID
+      parentUUID: newTaskParentUUID
     });
 
-    this.setStorage();
-    this.render();
     this.setFocusAtEnd(this.getTaskElementByUUID(uuid));
   },
   toggleComplete: function(uuid) {
-    
     var targetTask = this.getTaskByUUID(uuid);
     targetTask.completed = !targetTask.completed;   
     this.setStorage();
@@ -264,7 +309,6 @@ var tasks = {
     this.setStorage();
     this.render();
     if (previousItem) {
-      // debugger;
       this.setFocusAtEnd(this.getTaskElementByUUID(previousItem.uuid));
     }
   },
@@ -288,7 +332,10 @@ var tasks = {
     Handlebars.registerPartial('renderTask', taskTemplate);
 
     // Need to load with the array here
-    var renderArray = this.renderWalker(this.allTasks); // identify filling context e.g. data
+    //var renderArray = this.renderWalker(this.allTasks); // identify filling context e.g. data
+    var renderArray = this.allTasks.filter(function(el) {
+      return el.parentUUID === 0;
+    });
     var html = taskTemplate(renderArray); // render the template WITH the data
     taskList.innerHTML = html;
   },
@@ -312,7 +359,7 @@ var tasks = {
 
     var tree = buildTree.call(this, inputArray);
     return tree;
-  }
+  },
 }
 
 tasks.init();

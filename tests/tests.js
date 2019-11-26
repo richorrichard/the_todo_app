@@ -1,8 +1,14 @@
 "use strict";
 
+function resetTasks(numTask) {
+  tasks.deleteAllTasks();
+  for (var i = 1; i <= numTask; i++) {
+    tasks.create('This is task ' + i);
+  }  
+}
+
 tests({
 
-  /*
   '### Render Tasks': function() {},
   '- It should display task list.': function() {
     tasks.deleteAllTasks();
@@ -23,7 +29,6 @@ tests({
   },
   '### Manage Tasks': function() {},
   '- It should be able to clear all completed tasks.': function() {
-    // debugger;
     tasks.deleteAllTasks();
     var task1 = tasks.create('This is task 1');
     var task2 = tasks.create('This is task 2');
@@ -63,7 +68,7 @@ tests({
     eq(tasks.getTaskByUUID(uuid).task, 'foo');
     tasks.deleteAllTasks();
   },
-  '- It should be able to update a task based on uuid': function() {
+  '- It should be able to update a task based on uuid.': function() {
     var newTask = tasks.create('foo');
     var uuid = newTask.uuid;
     tasks.update(uuid, {
@@ -81,96 +86,98 @@ tests({
     eq(childTask.parentUUID, parentTask.uuid);
     tasks.deleteAllTasks();
   },
-  '- It should be able to change which tasks are parent tasks.': function() {
-    var parentTask1 = tasks.create('This is the first parent task');
-    var parentTask2 = tasks.create('This is the new parent task');
-    var childTask = tasks.create('This is a child task');
-    tasks.update(childTask.uuid, {
-      parentUUID: parentTask1.uuid,
-    });
-    eq(childTask.parentUUID, parentTask1.uuid);
-    tasks.update(childTask.uuid, {
-      parentUUID: parentTask2.uuid,
-    });
-    eq(childTask.parentUUID, parentTask2.uuid);
-    tasks.deleteAllTasks();
-  },
-  '- It should be able to remove all parent tasks from a task.': function() {
-    var parentTask = tasks.create('This is a parent task');
-    var childTask = tasks.create('This is a child task');
-    tasks.update(childTask.uuid, {
-      parentUUID: parentTask.uuid,
-    });
-    eq(childTask.parentUUID, parentTask.uuid);
-    tasks.update(childTask.uuid, {
-      parentUUID: undefined,
-    });
-    eq(childTask.parentUUID, undefined);
-    tasks.deleteAllTasks();
-  },
-  '- It should make task `i-1` the parent task.': function() {
-    var task1 = tasks.create('This is task 1');
-    var task2 = tasks.create('This is task 2');
-    tasks.nestDownOne(task2.uuid);
-    
-    eq(task2.parentUUID, task1.uuid);
-    tasks.deleteAllTasks();
-  },
-  '- If `allTasks[0]`, it shouldn\'t be able to nest at all.': function() {
+  '### Nesting Down': function() {},
+  '- If task is the first task in array, it shouldn\'t be able to nest at all.': function() {
     tasks.deleteAllTasks();
     var task1 = tasks.create('This is allTasks[0]');
     var task2 = tasks.create('This is allTasks[1]');
     tasks.nestDownOne(task1.uuid);
-    
-    eq(task1.parentUUID, undefined);
+
+    eq(task1.parentUUID, 0);
     tasks.deleteAllTasks();
   },
-  '- If `parentUUID`, it shouldn\'t be able to nest any farther.': function() {
-    
-    // data to use for all tests
-    var task1 = tasks.create('This is task 1');
-    var task2 = tasks.create('This is task 2');
-    var task3 = tasks.create('This is task 3');
-    var task4 = tasks.create('This is task 4');
-    var task5 = tasks.create('This is task 5');
-    
-    tasks.update(task3.uuid, {parentUUID: task2.uuid,});
-    tasks.update(task5.uuid, {parentUUID: task4.uuid,});
-    
-    // try to take down again
-    tasks.nestDownOne(task3.uuid);
-    tasks.nestDownOne(task4.uuid);
-    tasks.nestDownOne(task4.uuid);
-    eq(task3.parentUUID, task2.uuid);
-    eq(task4.parentUUID, task3.uuid);
-    eq(task5.parentUUID, task4.uuid);
-    tasks.deleteAllTasks();
-  },
-  '- If no `parentUUID`, it shouldn\'t nest up at all.': function() {
-    var task1 = tasks.create('This is allTasks[0]');
-    tasks.nestUpOne(task1.uuid);
-    eq(task1.parentUUID, undefined);
-    tasks.deleteAllTasks();
-  },
-  '- If parent, `parentUUID` should be set to parent\'s `parentUUID`.': function() {
-    var task1 = tasks.create('This is task 1');
-    var task2 = tasks.create('This is task 2');
-    var task3 = tasks.create('This is task 3');
-    var task4 = tasks.create('This is task 4');
+  '- If task is already a child task, it should not nest any farther.': function() {
+    resetTasks(2);
+    var task1 = tasks.allTasks[0];
+    var task2 = tasks.allTasks[1];
     tasks.nestDownOne(task2.uuid);
-    tasks.nestDownOne(task4.uuid);
+    eq(task2.parentUUID, task1.uuid);
+    tasks.nestDownOne(task2.uuid);
+    eq(task2.parentUUID, task1.uuid);
+  },
+  '- It should be able to nest one deeper than task above it.': function() {
+    resetTasks(3);
+    var task1 = tasks.allTasks[0];
+    var task2 = tasks.allTasks[1];
+    var task3 = tasks.allTasks[2];
+    tasks.nestDownOne(task2.uuid);
     tasks.nestDownOne(task3.uuid);
+    eq(task2.parentUUID, task1.uuid);
+    eq(task3.parentUUID, task2.uuid);
+  },
+  '### Nesting Up': function() {},
+  '- If a task has no parent, it shouldn\'t be able to nest up.': function() {
+    resetTasks(2);
+    var task1 = tasks.allTasks[0];
+    var task2 = tasks.allTasks[1];
     tasks.nestUpOne(task2.uuid);
-    tasks.nestUpOne(task4.uuid);
-    eq(task2.parentUUID, undefined);
+    eq(task2.parentUUID, 0);
+  },
+  '- If the task before has the same parent as the task, it should do nothing.': function() {
+    resetTasks(4);
+    var task1 = tasks.allTasks[0];
+    var task2 = tasks.allTasks[1];
+    var task3 = tasks.allTasks[2];
+    var task4 = tasks.allTasks[3];
+    tasks.nestDownOne(task2.uuid);
+    tasks.update(task3.uuid, {
+      parentUUID: task1.uuid
+    });
+    tasks.nestUpOne(task3.uuid);
+    eq(task3.parentUUID, task1.uuid);
+  },
+  '- If there is another child task after current task, it should do nothing.': function() {
+    resetTasks(4);
+    var task2 = tasks.allTasks[1];
+    var task3 = tasks.allTasks[2];
+    var task4 = tasks.allTasks[3];
+    tasks.nestDownOne(task2.uuid);
+    tasks.nestDownOne(task3.uuid);
+    tasks.update(task4.uuid, {
+      parentUUID: task2.uuid
+    });
+    tasks.nestUpOne(task3.uuid);
+    eq(task3.parentUUID, task2.uuid);
     eq(task4.parentUUID, task2.uuid);
-    tasks.deleteAllTasks();
+  },
+  '- If a task\'s parent is a top level task, it should unnest to level 0.': function() {
+    resetTasks(2);
+    var task2 = tasks.allTasks[1];
+    tasks.nestDownOne(task2.uuid);
+    tasks.nestUpOne(task2.uuid);
+    eq(task2.parentUUID, 0);
+  },
+  '- If task is the last task in allTasks array, it should be able to nest up all the way to level 0.': function() {
+    resetTasks(4);
+    var task1 = tasks.allTasks[0];
+    var task2 = tasks.allTasks[1];
+    var task3 = tasks.allTasks[2];
+    var task4 = tasks.allTasks[3];
+    tasks.nestDownOne(task2.uuid);
+    tasks.nestDownOne(task3.uuid);
+    tasks.nestDownOne(task4.uuid);
+    tasks.nestUpOne(task4.uuid);
+    eq(task4.parentUUID, task2.uuid);
+    tasks.nestUpOne(task4.uuid);
+    eq(task4.parentUUID, task1.uuid);
+    tasks.nestUpOne(task4.uuid);
+    eq(task4.parentUUID, 0);
   },
   '### Create Task': function() {},
   '- It should be able to create tasks.': function() {
+    tasks.deleteAllTasks(); 
     tasks.create('This is a task');
     eq(tasks.allTasks[0].task, 'This is a task');
-    tasks.deleteAllTasks(); 
   },
   '- It should return the new task to allow usage of created task.': function() {
     tasks.deleteAllTasks();
@@ -196,9 +203,9 @@ tests({
   '- If `allTasks.length > 0`, it should render the page.': function () {
     tasks.deleteAllTasks();
     tasks.allTasks = [
-      {task: 'This is manually added task 1', completed: false, uuid: 123},
-      {task: 'This is manually added task 2', completed: false, uuid: 124},
-      {task: 'This is manually added task 3', completed: false, uuid: 125},
+      {task: 'This is manually added task 1', completed: false, parentUUID: 0, uuid: 123},
+      {task: 'This is manually added task 2', completed: false, parentUUID: 0, uuid: 124},
+      {task: 'This is manually added task 3', completed: false, parentUUID: 0, uuid: 125},
     ];
     tasks.init();
     var task1Element = document.querySelector('[data-u="123"]');
@@ -207,9 +214,9 @@ tests({
   '- If `allTasks.length === 0`, it should try and load from localStorage.': function () {
     tasks.deleteAllTasks();
     tasks.allTasks = [
-      {task: 'This is manually added task 1', completed: false, uuid: 123},
-      {task: 'This is manually added task 2', completed: false, uuid: 124},
-      {task: 'This is manually added task 3', completed: false, uuid: 125},
+      {task: 'This is manually added task 1', completed: false, parentUUID: 0, uuid: 123},
+      {task: 'This is manually added task 2', completed: false, parentUUID: 0, uuid: 124},
+      {task: 'This is manually added task 3', completed: false, parentUUID: 0, uuid: 125},
     ];
     tasks.setStorage();
     tasks.allTasks = [];
@@ -219,7 +226,6 @@ tests({
   },
   '- If no allTasks, and no localStorage, it should create a new starter task.': function () {
     tasks.deleteAllTasks();
-    // debugger;
     tasks.init();
     var task1Element = document.querySelector('.taskList > div');
     eq(Boolean(task1Element), true);
@@ -244,13 +250,13 @@ tests({
     eq(tasks.getIndexByUUID(task.uuid), 0);
   },
   '### Interface Requirements': function() {},
-  '- It should show that tasks are completed when checked off. ': function() {
+  '- It should show that tasks are completed when checked off.': function() {
     // Passes
   },
   '- It should show that tasks are nested under parent task.': function() {
     // Passes
   },
-  '- It should allow users to clear completed tasks': function() {
+  '- It should allow users to clear completed tasks.': function() {
     // Passes
   },
   '- It should allow tasks to be deleted.': function() {
@@ -269,17 +275,20 @@ tests({
   '- If cmd+delete, delete task.': function() {
     // Passes
   },
-  '- If tab inside task, trigger `nestDownOne`. ': function() {
+  '- If tab inside task, trigger `nestDownOne`.': function() {
     // Passes
   },
   '- If shift+tab inside task, trigger `nestUpOne`.': function() {
     // Passes
   },
-  '- ✓ If cmd+delete, delete task.': function() {
+  '- If cmd+delete, delete task.': function() {
     // Passes
   },
   '- If cmd+enter, toggle complete task.': function() {
     // Passes
   },
-  */
+  
 });
+
+tasks.deleteAllTasks();
+tasks.init();
