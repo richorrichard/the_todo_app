@@ -5,9 +5,11 @@
 - ✓ It should display child tasks as nested tasks visually.
 ### Manage Tasks
 - ✓ It should be able to clear all completed tasks.
+- ✓ It should clear only completed tasks, not children of completed tasks.
 
 ### Delete Tasks
 - ✓ It should be able to delete individual tasks.
+- ✓ It should only delete the task, not any child tasks.
 
 ### Complete Tasks
 - ✓ It should be able to mark a task as complete.

@@ -1,12 +1,12 @@
 "use strict";
-
-// TODO Alt version: Could move all of the functions on the task to inside a prototype, 
-// and then simply call self.xx_method. Try that after getting this wrapped. 
+ 
 var ENTERKEY = 13;
 var ESCKEY = 27;
 var TABKEY = 9;
 var DELETEKEY = 8;
+var LEFTARROWKEY = 37;
 var UPARROWKEY = 38;
+var RIGHTARROWKEY = 39;
 var DOWNARROWKEY = 40;
 
 var constructors = {
@@ -22,14 +22,13 @@ var constructors = {
 var tasks = {
   allTasks: [],
   init: function() {
-    // Check if localStorage contains matching tasks
     if (this.allTasks.length === 0) {
       if (this.getStorage().length > 0){
         this.allTasks = this.getStorage();
       } else {
-        var firstTask = this.create('');
+        this.create('');
       }
-    } 
+    }
     
     this.render();
     this.bindEvents();
@@ -44,27 +43,27 @@ var tasks = {
       throw new ReferenceError('Task list has not been created yet.');
     }
     
-    var matchingItem = this.allTasks.find(function(value) {
-      if (value.uuid === uuid) {
-        return value;
+    var currentTask = this.allTasks.find(function(el) {
+      if (el.uuid === uuid) {
+        return el;
       }
     });
 
-    return matchingItem;
+    return currentTask;
   },
   getIndexByUUID: function(uuid) {
     if (!this.allTasks) {
       throw new ReferenceError('Task list has not been created yet.');
     }
     
-    var matchingIndex = this.allTasks.findIndex(function(value, index) {
-      return value.uuid === uuid;
+    var currentTaskIndex = this.allTasks.findIndex(function(el) {
+      return el.uuid === uuid;
     });
 
-    return matchingIndex;
+    return currentTaskIndex;
   },
-  getUUIDFromElement: function(domElement) {
-    var UUIDString = domElement.dataset['u'];
+  getUUIDFromElement: function(domEl) {
+    var UUIDString = domEl.dataset['u'];
     return parseInt(UUIDString);
   },
   getTaskElementByUUID: function(uuid) {
@@ -107,6 +106,7 @@ var tasks = {
       e.stopImmediatePropagation();
     }.bind(this));
     document.querySelector('.taskList').addEventListener('keydown', function(e) {
+      // console.log(e.which);
       if (e.target.className === 'task') {
         this.updateKeydown(e);
       }
@@ -128,23 +128,25 @@ var tasks = {
     }.bind(this));
   },
   updateKeyup: function(e) {
-    var elem = e.target;
-    var uuid = parseInt(elem.parentElement.dataset['u']);
-    // if esc, return and reset the string to stored value
+    var domEl = e.target;
+    var uuid = parseInt(domEl.parentElement.dataset['u']);
+
     if (e.which === ESCKEY) {
-      this.cancelUpdate(elem, uuid);
+      this.cancelUpdate(domEl, uuid);
     } else if (e.which === ENTERKEY && !e.metaKey) {
       this.create('');
+    } else if (e.which === UPARROWKEY || e.which === DOWNARROWKEY || e.which === RIGHTARROWKEY || e.which === LEFTARROWKEY) {
+      return;
     } else {
       this.update(uuid, {
-        task: elem.innerText
+        task: domEl.innerText
       });
       this.setFocusAtEnd(this.getTaskElementByUUID(uuid));
     }
   },
   updateKeydown: function(e) {
-    var elem = e.target;
-    var uuid = parseInt(elem.parentElement.dataset['u']);
+    var domEl = e.target;
+    var uuid = parseInt(domEl.parentElement.dataset['u']);
     var prevTaskIndex;
     var prevTaskElement;
     var nextTaskIndex;
@@ -192,10 +194,10 @@ var tasks = {
       }
     }
   },
-  cancelUpdate: function(el, uuid) {
-    var task = this.getTaskByUUID(uuid);
-    el.innerText = task.task;
-    el.blur();
+  cancelUpdate: function(domEl, uuid) {
+    var currentTask = this.getTaskByUUID(uuid);
+    domEl.innerText = currentTask.task;
+    domEl.blur();
   },
   // CRUD
   create: function(taskText) {
@@ -210,23 +212,16 @@ var tasks = {
         parentTask.children.push(newTask);
       } 
     } 
+
     this.allTasks.push(newTask);
     this.setStorage();
     this.render();
     this.setFocusAtEnd(this.getTaskElementByUUID(newTask.uuid));
     return newTask;
   },
-  createOld: function(task) {
-    var newTask = new constructors.Task(task);
-    this.allTasks.push(newTask);
-    this.setStorage();
-    this.render();
-    this.setFocusAtEnd(this.getTaskElementByUUID(newTask.uuid));
-    return newTask;
-  },
-  update: function(uuid, updateObject) {
+  update: function(uuid, updateObj) {
     /**
-     * `updateObject` available properties:
+     * `updateObj` available properties:
      *    task: [string],
      *    parentUUID: [number]
      */
@@ -235,14 +230,14 @@ var tasks = {
 
     if (arguments.length > 1) {
       // Explictly set each property to prevent overwriting uuid etc.
-      if (updateObject.hasOwnProperty('task')) {
-        currentTask['task'] = updateObject['task'];
+      if (updateObj.hasOwnProperty('task')) {
+        currentTask['task'] = updateObj.task;
       }
 
-      if (updateObject.hasOwnProperty('parentUUID')) {
+      if (updateObj.hasOwnProperty('parentUUID')) {
         var currentParentTaskUUID = currentTask.parentUUID;
         var currentParentTask = this.getTaskByUUID(currentParentTaskUUID);
-        var newParentTaskUUID = updateObject['parentUUID'];
+        var newParentTaskUUID = updateObj.parentUUID;
         var newParentTask;
           
         if (currentParentTaskUUID > 0) {
@@ -265,17 +260,16 @@ var tasks = {
     this.render();
   },
   nestDownOne: function(uuid) {
-    var task = this.getTaskByUUID(uuid);
+    var currentTask = this.getTaskByUUID(uuid);
     var taskPosition = this.getIndexByUUID(uuid);
     var taskPrevious = this.allTasks[taskPosition - 1];
-    var taskParent = this.getTaskByUUID(task.parentUUID);
+    var taskParent = this.getTaskByUUID(currentTask.parentUUID);
 
     if (taskPosition === 0) {
       return;
     }
 
-    // If is already child, do nothing.
-    if (task.parentUUID > 0) {
+    if (currentTask.parentUUID > 0) {
       if (taskPrevious.uuid === taskParent.uuid) {
         return;
       }
@@ -293,7 +287,6 @@ var tasks = {
     var taskParent = this.getTaskByUUID(currentTask.parentUUID);
     var newTaskParentUUID;
     
-    // If no parent, do nothing
     if (currentTask.parentUUID === 0) {
       return;
     }
@@ -313,7 +306,6 @@ var tasks = {
       newTaskParentUUID = taskParent.parentUUID;
     }
     
-    // Update task parent
     this.update(uuid, {
       parentUUID: newTaskParentUUID
     });
@@ -321,8 +313,8 @@ var tasks = {
     this.setFocusAtEnd(this.getTaskElementByUUID(uuid));
   },
   toggleComplete: function(uuid) {
-    var targetTask = this.getTaskByUUID(uuid);
-    targetTask.completed = !targetTask.completed;   
+    var currentTask = this.getTaskByUUID(uuid);
+    currentTask['completed'] = !currentTask.completed;   
     this.setStorage();
     this.render(); 
     this.setFocusAtEnd(this.getTaskElementByUUID(uuid));
@@ -338,17 +330,16 @@ var tasks = {
       var currentTaskChildIndex = parentTask.children.findIndex(function(el) {
         return el === currentTask; 
       });
-      parentTask.children.splice(currentTaskChildIndex, 1); // This is the remove from children
+      parentTask.children.splice(currentTaskChildIndex, 1);
     }
     // search for any task with this as its parent
     var parentMatchArray = this.allTasks.filter(function(el) {
       return el.parentUUID === uuid;
     });
-    // set those to 0
     parentMatchArray.forEach(function(el) {
       el.parentUUID = 0;
     });
-    // delete this task from master index
+
     this.allTasks.splice(indexToDelete,1);
     this.setStorage();
     this.render();
@@ -362,10 +353,12 @@ var tasks = {
     this.render();
   },
   clearCompleted: function() {
-    var filteredTasks = this.allTasks.filter(function(value) {
-      return value.completed === false;
+    var filteredTasks = this.allTasks.filter(function(el) {
+      return el.completed === true;
     });
-    this.allTasks = filteredTasks;
+    filteredTasks.forEach(function(el) {
+      this.deleteTask(el.uuid);
+    }.bind(this));
     this.setStorage();
     this.render();
   },
@@ -382,28 +375,7 @@ var tasks = {
     });
     var html = taskTemplate(renderArray); // render the template WITH the data
     taskList.innerHTML = html;
-  },
-  renderWalker: function(inputArray) {    
-    // walker function courtesy of StackOverflow
-    function buildTree(allTasks, parentUUID) {
-      var branch = [];
-
-      for (var task of allTasks) {
-        if (task.parentUUID === parentUUID) {
-          var children = buildTree(allTasks, task.uuid);
-          if (children) {
-            task.children = children;
-          }
-          branch.push(task);
-        }
-      }
-
-      return branch;
-    }
-
-    var tree = buildTree.call(this, inputArray);
-    return tree;
-  },
+  }
 }
 
 tasks.init();

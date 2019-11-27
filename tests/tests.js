@@ -7,6 +7,8 @@ function resetTasks(numTask) {
   }  
 }
 
+// TODO: Update all tasks to consistent reset format
+
 tests({
 
   '### Render Tasks': function() {},
@@ -29,17 +31,35 @@ tests({
   },
   '### Manage Tasks': function() {},
   '- It should be able to clear all completed tasks.': function() {
-    tasks.deleteAllTasks();
-    var task1 = tasks.create('This is task 1');
-    var task2 = tasks.create('This is task 2');
+    resetTasks(4);
+    var task1 = tasks.allTasks[0];
+    var task2 = tasks.allTasks[1];
+    var task3 = tasks.allTasks[2];
+    var task4 = tasks.allTasks[3];
     tasks.toggleComplete(task1.uuid);
+    tasks.toggleComplete(task2.uuid);
+    tasks.toggleComplete(task3.uuid);
     tasks.clearCompleted();
     eq(tasks.allTasks.length === 1, true);
-    eq(tasks.allTasks[0].uuid, task2.uuid);
-    tasks.deleteAllTasks();
+    eq(tasks.allTasks[0].uuid, task4.uuid);
+  },
+  '- It should clear only completed tasks, not children of completed tasks.': function() {
+    resetTasks(4);
+    var task1 = tasks.allTasks[0];
+    var task2 = tasks.allTasks[1];
+    var task3 = tasks.allTasks[2];
+    var task4 = tasks.allTasks[3];
+    tasks.nestDownOne(task2.uuid);
+    tasks.nestDownOne(task3.uuid);
+    tasks.nestDownOne(task4.uuid);
+    tasks.toggleComplete(task2.uuid);
+    tasks.clearCompleted();
+    eq(tasks.allTasks.length === 3, true);
+    eq(tasks.allTasks[2].uuid, task4.uuid);
   },
   '### Delete Task(s)': function() {},
   '- It should be able to delete individual tasks.': function() {
+    tasks.deleteAllTasks();
     var newTask1 = tasks.create('This is a task');
     var newTask2 = tasks.create('This is a task 2');
     var newTask3 = tasks.create('This is a task 3');
@@ -47,9 +67,8 @@ tests({
     eq(tasks.allTasks.includes(newTask1), true);
     eq(tasks.allTasks.includes(newTask2), false);
     eq(tasks.allTasks.includes(newTask3), true);
-    tasks.deleteAllTasks();
   },
-  '- It should only delete the task, not any child tasks': function() {
+  '- It should only delete the task, not any child tasks.': function() {
     resetTasks(4);
     var task1 = tasks.allTasks[0];
     var task2 = tasks.allTasks[1];
@@ -67,11 +86,13 @@ tests({
   },
   '### Complete Task': function() {},
   '- It should be able to mark a task as complete.': function() {
+    tasks.deleteAllTasks();
     var newTask = tasks.create('This is a task');
     tasks.toggleComplete(newTask.uuid);
     eq(newTask.completed, true);
   },
   '- It should be able to mark a task as incomplete.': function() {
+    tasks.deleteAllTasks();
     var newTask = tasks.create('This is a task');
     tasks.toggleComplete(newTask.uuid); // true
     tasks.toggleComplete(newTask.uuid); // false
@@ -79,28 +100,28 @@ tests({
   },
   '### Update Task': function() {},
   '- It should be able to access a task by its uuid.': function() {
+    tasks.deleteAllTasks();
     var newTask = tasks.create('foo');
     var uuid = newTask.uuid;
     eq(tasks.getTaskByUUID(uuid).task, 'foo');
-    tasks.deleteAllTasks();
   },
   '- It should be able to update a task based on uuid.': function() {
+    tasks.deleteAllTasks();
     var newTask = tasks.create('foo');
     var uuid = newTask.uuid;
     tasks.update(uuid, {
       task: 'bar'
     });
     eq(newTask.task, 'bar');
-    tasks.deleteAllTasks();
   },
   '- It should be able to assign a parent task to any task.': function() {
+    tasks.deleteAllTasks();
     var parentTask = tasks.create('This is a parent task');
     var childTask = tasks.create('This is a child task');
     tasks.update(childTask.uuid, {
       parentUUID: parentTask.uuid,
     });
     eq(childTask.parentUUID, parentTask.uuid);
-    tasks.deleteAllTasks();
   },
   '### Nesting Down': function() {},
   '- If task is the first task in array, it shouldn\'t be able to nest at all.': function() {
@@ -108,9 +129,7 @@ tests({
     var task1 = tasks.create('This is allTasks[0]');
     var task2 = tasks.create('This is allTasks[1]');
     tasks.nestDownOne(task1.uuid);
-
     eq(task1.parentUUID, 0);
-    tasks.deleteAllTasks();
   },
   '- If task is already a child task, it should not nest any farther.': function() {
     resetTasks(2);
@@ -199,21 +218,19 @@ tests({
     tasks.deleteAllTasks();
     var newTask = tasks.create('This is a child task');
     eq(tasks.allTasks[0].uuid, newTask.uuid);
-    tasks.deleteAllTasks();
   },
   '- It should give each task a unique ID': function() {
+    tasks.deleteAllTasks();
     var task1 = tasks.create('This is a task');
     var task2 = tasks.create('This is a second task');
     eq(Boolean(task1.uuid), true);
     eq(task1.uuid !== task2.uuid, true);
-    tasks.deleteAllTasks();
   },
   '- It should be able to store tasks on localStorage.': function() {
     tasks.deleteAllTasks();
     tasks.create('This is a stored item');
     var storedTaskList = JSON.parse(localStorage.getItem('the_todo_app'));
     eq(storedTaskList.length, 1);
-    tasks.deleteAllTasks();
   },
   '### Initiate App': function() {},
   '- If `allTasks.length > 0`, it should render the page.': function () {
@@ -252,7 +269,6 @@ tests({
     var task = tasks.create('This is a task');
     var task1Element = document.querySelector('[data-u="' + task.uuid + '"]');
     eq(Boolean(task1Element), true);
-    
   },
   '- It should be able to retrieve a task by its UUID.': function() {
     tasks.deleteAllTasks();
@@ -309,6 +325,9 @@ tests({
   '- If meta + down arrow, move to next task.': function() {
     // Passes
   },
+  '- If arrow keys, move within input and don\'t fire listener': function() {
+    // Passes
+  },
   '- If task loses focus, update task': function() {
     fail();
   },
@@ -317,3 +336,4 @@ tests({
 
 tasks.deleteAllTasks();
 tasks.init();
+
