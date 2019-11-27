@@ -328,9 +328,6 @@ tests({
   '- If arrow keys, move within input and don\'t fire listener': function() {
     // Passes
   },
-  '- If task loses focus, update task': function() {
-    fail();
-  },
 
 });
 
