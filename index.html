@@ -9,12 +9,30 @@
 		<section class="todo-container">
 			<div>
 				<div class="wrapper">
-					<h1 class="taskList-title contentEditable">Classic To Do List</h1>
+					<h1 class="taskList-title contentEditable"><span class='asterix'>*</span>Classic To Do List</h1>
 					<div class="taskList" id="taskList">
 						<!-- Mustache attached here. -->
 					</div>
 					<span class='addTask'>+</span>
 					<span class="clearAll">#</span>
+					<div class="instructions">
+						<p>
+							<h3>POINT</h3>
+							<span class="highlight">>CLICK<</span> the plus sign to add a task.<br>
+							<span class="highlight">>CLICK<</span> the hash to clear completed tasks.<br>
+							<span class="highlight">>CLICK<</span> to edit task.<br>
+							<span class="highlight">>CLICK<</span> the dot to mark task complete.<br>
+							<br>
+							<h3>TYPE</h3>
+							<span class="highlight">ENTER</span> to create new task from within task.<br>
+							<span class="highlight">TAB</span> to make current task a child of the task above.<br>
+							<span class="highlight">SHIFT + TAB</span> to un-nest current task one level.<br>
+							<span class="highlight">CMD + ENTER</span> to mark current task complete.<br>
+							<span class="highlight">CMD + DELETE</span> to delete current task.<br>
+							<span class="highlight">CMD + ↑</span> to navigate to next task.<br>
+							<span class="highlight">CMD + ↓</span> to navigate to previous task.<br>
+						</p>
+					</div>
 				</div>
 			</div>
 		</section>
